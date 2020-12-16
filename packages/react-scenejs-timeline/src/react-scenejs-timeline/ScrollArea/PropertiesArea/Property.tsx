@@ -30,7 +30,7 @@ export default class Property extends ElementComponent<{
         const name = propertyNames[length - 1] as string;
 
         return (
-            <div className={prefix("property" + (folded === 1 ? " fold" : "") + (selected ? " select" : ""))}
+            <div className={prefix("property" /*+ (folded === 1 ? " fold" : "")*/ + (selected ? " select" : ""))}
                 onClick={this.onClick}
                 data-id={id}
                 data-name={name}
@@ -40,9 +40,9 @@ export default class Property extends ElementComponent<{
                 style={{
                     paddingLeft: `${10 + (length - 1) * 20}px`,
                 }}>
-                <div className={prefix("arrow")}></div>
+                {/* <div className={prefix("arrow")}></div> */}
                 <span>{name}</span>
-                <div className={prefix("remove")}></div>
+                <div className={prefix("remove")} title="Remove selected track"></div>
             </div>
         );
     }

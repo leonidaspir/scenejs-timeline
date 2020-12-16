@@ -17,6 +17,10 @@ export interface TimelineProps extends TimelineAttributes {
     scene?: Scene | SceneItem;
     keyboard?: boolean;
     onSelect?: (e: SelectEvent) => any;
+    onTrackAdded?: (item: SceneItem) => any;
+    onTogglePlay?: (playState: boolean) => any;
+    onToggleRecord?: (playState: boolean) => any;
+    onTimeUpdated?: (time: number) => any;
 }
 export interface TimelineState {
     zoom: number;

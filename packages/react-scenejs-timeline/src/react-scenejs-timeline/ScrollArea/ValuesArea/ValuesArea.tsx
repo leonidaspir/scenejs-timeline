@@ -100,6 +100,7 @@ export default class ValuesArea extends ElementComponent<{
         this.keycon.off();
     }
     private edit(target: HTMLInputElement, value: any) {
+
         const parentEl = getTarget(target, el => hasClass(el, "value"));
 
         if (!parentEl) {
@@ -110,6 +111,7 @@ export default class ValuesArea extends ElementComponent<{
         if (index === -1) {
             return;
         }
+        
         this.props.timeline.editKeyframe(index, value);
     }
 }

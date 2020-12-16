@@ -7,25 +7,38 @@ import { CSS } from "./consts";
 import {
     prefix,
     numberFormat,
-    getTarget, findElementIndexByPosition,
-    hasClass, flatObject, isScene,
+    getTarget,
+    findElementIndexByPosition,
+    hasClass,
+    flatObject,
+    isScene,
 } from "./utils";
 import KeyController, { KeyControllerEvent } from "keycon";
 import Scene, { SceneItem, ROLES } from "scenejs";
 import Dragger from "@daybrush/drag";
 import { dblCheck } from "./dblcheck";
 import { getTimelineInfo } from "./TimelineInfo";
-import { IObject, find, isUndefined, isObject, addEvent, removeEvent } from "@daybrush/utils";
+import {
+    IObject,
+    find,
+    isUndefined,
+    isObject,
+    addEvent,
+    removeEvent,
+} from "@daybrush/utils";
 import PureProps from "react-pure-props";
 import styled from "react-css-styler";
 import { ref } from "framework-utils";
 
 const TimelineElement = styled("div", CSS);
-
 export default class Timeline extends PureProps<TimelineProps, TimelineState> {
     public static defaultProps = {
         keyboard: true,
-        onSelect: () => { },
+        onSelect: () => {},
+        onTrackAdded: () => {},
+        onTogglePlay: () => {},
+        onToggleRecord: () => {},
+        onTimeUpdated: () => {},
     };
     public draggers!: Dragger[];
     public headerArea!: HeaderArea;
@@ -36,7 +49,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         alt: false,
         zoom: 1,
         maxDuration: 0,
-        maxTime: 0,
+        maxTime: 10,
         timelineInfo: {},
         selectedProperty: "",
         selectedTime: -1,
@@ -46,43 +59,46 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
     };
     private pinchDragger!: Dragger;
     private keyMap: {
-        keydown: IObject<(e: KeyControllerEvent) => any>,
-        keyup: IObject<(e: KeyControllerEvent) => any>,
+        keydown: IObject<(e: KeyControllerEvent) => any>;
+        keyup: IObject<(e: KeyControllerEvent) => any>;
     } = {
-            keydown: {
-                alt: () => {
-                    this.setState({ alt: true });
-                },
-                space: ({ inputEvent }) => {
-                    inputEvent.preventDefault();
-                },
-                left: () => {
-                    this.prev();
-                },
-                right: () => {
-                    this.context();
-                },
+        keydown: {
+            alt: () => {
+                this.setState({ alt: true });
             },
-            keyup: {
-                alt: () => {
-                    this.setState({ alt: false });
-                },
-                esc: () => {
-                    this.finish();
-                },
-                backspace: () => {
-                    this.removeKeyframe(this.state.selectedProperty);
-                },
-                space: () => {
-                    this.togglePlay();
-                },
+            space: ({ inputEvent }) => {
+                inputEvent.preventDefault();
             },
-        };
+            left: () => {
+                this.prev();
+            },
+            right: () => {
+                this.context();
+            },
+        },
+        keyup: {
+            alt: () => {
+                this.setState({ alt: false });
+            },
+            esc: () => {
+                this.finish();
+            },
+            backspace: () => {
+                this.removeKeyframe(this.state.selectedProperty);
+            },
+            space: () => {
+                this.togglePlay();
+            },
+        },
+    };
 
     constructor(props: any) {
         super(props);
 
-        this.state = { ...this.state, ...this.initScene(this.props.scene, false) };
+        this.state = {
+            ...this.state,
+            ...this.initScene(this.props.scene, false),
+        };
     }
     public render() {
         const {
@@ -104,8 +120,12 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
 
         return (
             <TimelineElement
-                className={prefix("timeline" + (alt ? " alt" : "")) + (className ? ` ${className}` : "")}
-                {...attributes}>
+                className={
+                    prefix("timeline" + (alt ? " alt" : "")) +
+                    (className ? ` ${className}` : "")
+                }
+                {...attributes}
+            >
                 <ControlArea
                     ref={ref(this, "controlArea")}
                     scene={scene}
@@ -117,7 +137,8 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
                     maxDuration={maxDuration}
                     zoom={zoom}
                     maxTime={maxTime}
-                    timelineInfo={timelineInfo} />
+                    timelineInfo={timelineInfo}
+                />
 
                 <ScrollArea
                     ref={ref(this, "scrollArea")}
@@ -157,7 +178,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         }
     }
     public componentWillUnmount() {
-        this.draggers.forEach(dragger => {
+        this.draggers.forEach((dragger) => {
             dragger.unset();
         });
         this.pinchDragger.unset();
@@ -168,9 +189,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
 
         removeEvent(window, "blur", this.onBlur);
 
-        keycon
-            .offKeydown("alt", keydownMap.alt)
-            .offKeyup("alt", keyupMap.alt);
+        keycon.offKeydown("alt", keydownMap.alt).offKeyup("alt", keyupMap.alt);
 
         if (this.props.keyboard) {
             keycon
@@ -183,18 +202,24 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         }
     }
 
-    public update = (isInit: boolean = false) => {
+    public update = (isInit: boolean = false, zoomUpdate: boolean = true) => {
         const scene = this.props.scene;
 
         if (!scene) {
             return;
         }
-        const maxDuration = Math.ceil(scene.getDuration());
-        const maxTime = Math.max(this.state.maxTime, maxDuration);
-        const currentMaxTime = this.state.maxTime;
-        const zoom = this.state.zoom;
-        const nextZoomScale = currentMaxTime > 1 ? maxTime / currentMaxTime : 1;
-        const nextZoom = Math.max(1, zoom * nextZoomScale);
+
+        const maxDuration = zoomUpdate
+            ? Math.ceil(scene.getDuration()) + 1
+            : this.state.maxDuration;
+        //const maxDuration = 5;
+        const maxTime = maxDuration;
+        //const maxTime = Math.max(this.state.maxTime, maxDuration);
+        //const currentMaxTime = this.state.maxTime;
+        // const zoom = this.state.zoom;
+        // const nextZoomScale = currentMaxTime > 1 ? maxTime / currentMaxTime : 1;
+        // const nextZoom = Math.max(1, zoom * nextZoomScale);
+        const nextZoom = 1;
 
         this.setState({
             timelineInfo: getTimelineInfo(scene),
@@ -204,12 +229,12 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
             init: isInit,
             zoom: nextZoom,
         });
-    }
+    };
     public prev = () => {
         const scene = this.props.scene;
 
         scene && this.setTime(scene.getTime() - 0.05);
-    }
+    };
     public next() {
         const scene = this.props.scene;
 
@@ -219,14 +244,13 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         const scene = this.props.scene;
 
         scene && scene.finish();
-    }
+    };
     public selectItem(scene: Scene | SceneItem) {
         const { timelineInfo, selectedTime } = this.state;
 
         for (const name in timelineInfo) {
             const info = timelineInfo[name];
             if (info.item === scene) {
-
                 this.select(info.key, selectedTime);
                 break;
             }
@@ -278,16 +302,18 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         }
     }
     public editKeyframe(index: number, value: any) {
-        const propertiesInfo = this.scrollArea.propertiesArea.properties[index].props.propertiesInfo;
-        const isObjectData = propertiesInfo.isParent;
+        const propertiesInfo = this.scrollArea.propertiesArea.properties[index]
+            .props.propertiesInfo;
+        // const isObjectData = propertiesInfo.isParent;
 
-        if (isObjectData) {
-            return;
-        }
+        // if (isObjectData) {
+        //     return;
+        // }
         const item = propertiesInfo.item;
         const properties = propertiesInfo.properties;
 
         item.set(item.getIterationTime(), ...properties, value);
+
         this.update();
     }
     public togglePlay = () => {
@@ -295,12 +321,25 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         if (!scene) {
             return;
         }
+
+        let playState: boolean;
         if (scene.getPlayState() === "running") {
             scene.pause();
+            playState = false;
         } else {
             scene.play();
+            playState = true;
         }
-    }
+
+        if (this.props.onTogglePlay) {
+            this.props.onTogglePlay(playState);
+        }
+    };
+    public toggleRecord = (recordingState: boolean) => {
+        if (this.props.onToggleRecord) {
+            this.props.onToggleRecord(recordingState);
+        }
+    };
     public setTime(time?: number) {
         const scene = this.props.scene;
 
@@ -314,10 +353,17 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         if (isUndefined(time)) {
             time = scene.getTime();
         }
+
+        let activeTime = time;
         if (direction === "normal" || direction === "alternate") {
             scene.setTime(time);
         } else {
-            scene.setTime(scene.getDuration() - time!);
+            activeTime = scene.getDuration() - time!;
+            scene.setTime(activeTime);
+        }
+
+        if (this.props.onTimeUpdated) {
+            this.props.onTimeUpdated(activeTime);
         }
     }
     public setZoom(zoom: number) {
@@ -331,7 +377,10 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
     public getValues() {
         return this.values;
     }
-    public openDialog(item: Scene | SceneItem = this.props.scene!, properties: string[] = []) {
+    public openDialog(
+        item: Scene | SceneItem = this.props.scene!,
+        properties: string[] = []
+    ) {
         if (!this.props.scene) {
             return;
         }
@@ -345,13 +394,18 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         this.setTime(this.getTime(clientX));
     }
     private newItem(scene: Scene) {
-        const name = prompt("Add Item");
+        const name = prompt("New Track Name");
 
         if (!name) {
             return;
         }
-        scene.newItem(name);
+
+        const item = scene.newItem(name) as SceneItem;
         this.update();
+
+        if (this.props.onTrackAdded) {
+            this.props.onTrackAdded(item);
+        }
     }
     private newProperty(item: SceneItem, properties: string[]) {
         const property = prompt("Add Property");
@@ -362,7 +416,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         let roles: any = ROLES;
 
         const nextProperties = [...properties, property];
-        const isRole = nextProperties.every(name => {
+        const isRole = nextProperties.every((name) => {
             if (isObject(roles[name])) {
                 roles = roles[name];
                 return true;
@@ -375,26 +429,25 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
     }
     private getDistTime = (
         distX: number,
-        rect: ClientRect
-            = this.scrollArea.keyframesArea.scrollAreaElement.getBoundingClientRect(),
+        rect: ClientRect = this.scrollArea.keyframesArea.scrollAreaElement.getBoundingClientRect()
     ) => {
         const scrollAreaWidth = rect.width - 30;
         const percentage = Math.min(scrollAreaWidth, distX) / scrollAreaWidth;
         const time = this.state.maxTime * percentage;
 
         return Math.round(time * 20) / 20;
-    }
+    };
     private getTime = (clientX: number) => {
         const rect = this.scrollArea.keyframesArea.scrollAreaElement.getBoundingClientRect();
         const scrollAreaX = rect.left + 15;
         const x = Math.max(clientX - scrollAreaX, 0);
 
         return this.getDistTime(x, rect);
-    }
+    };
     private moveCursor(time: number) {
         const maxTime = this.state.maxTime;
-        const px = 15 - 30 * time / maxTime;
-        const percent = 100 * time / maxTime;
+        const px = 15 - (30 * time) / maxTime;
+        const percent = (100 * time) / maxTime;
         const left = `calc(${percent}% + ${px}px)`;
 
         this.scrollArea.keyframesArea.cursor.getElement().style.left = left;
@@ -404,7 +457,9 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         this.values = obj;
         const valuesArea = this.scrollArea.valuesArea.getElement();
         for (const name in obj) {
-            valuesArea.querySelector<HTMLInputElement>(`[data-id="${name}"] input`)!.value = obj[name];
+            valuesArea.querySelector<HTMLInputElement>(
+                `[data-id="${name}"] input`
+            )!.value = obj[name];
         }
     }
 
@@ -424,13 +479,31 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         const keyframesList = this.scrollArea.keyframesArea.keyframesList!;
         const id = keyframesList[index].props.id;
 
+        // --- check if we need to change the duration of the animation
+        if (this.props.scene) {
+            const timelineInfo = getTimelineInfo(this.props.scene);
+            const propertiesInfo = timelineInfo[id];
+            const selectedItem = propertiesInfo.item;
+
+            const itemTotalDuration = selectedItem.getTotalDuration();
+
+            if (time > itemTotalDuration) {
+                // @ts-ignore
+                selectedItem.newFrame(time);
+                this.setTime(time);
+            }
+        }
+
         this.select(id, time);
 
-        const inputElement = this.scrollArea.valuesArea.values[index].inputElement!;
+        this.editKeyframe(index, "");
 
-        if (inputElement) {
-            this.editKeyframe(index, inputElement.value);
-        }
+        // const inputElement = this.scrollArea.valuesArea.values[index]
+        //     .inputElement!;
+
+        // if (inputElement) {
+        //     this.editKeyframe(index, inputElement.value);
+        // }
     }
     private animate = (e: any) => {
         const time = e.time;
@@ -441,7 +514,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         this.moveCursor(time);
         this.setInputs(flatObject(e.frames || e.frame.get()));
         this.controlArea.timeArea.getElement().value = `${minute}:${second}:${milisecond}`;
-    }
+    };
     private initScene(scene?: Scene | SceneItem, isInit?: boolean) {
         if (!scene) {
             return {
@@ -497,7 +570,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
                 scrollKeyframesArea.scrollLeft = headerKeyframesArea.scrollLeft;
             }
         });
-        scrollKeyframesArea.addEventListener("scroll", e => {
+        scrollKeyframesArea.addEventListener("scroll", (e) => {
             if (isScrollKeyframe) {
                 isScrollKeyframe = false;
             } else {
@@ -507,8 +580,11 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         });
     }
     private selectByKeyframe(keyframeElement: HTMLElement) {
-        const keyframesElement: HTMLElement = keyframeElement.parentElement!.parentElement!;
-        const time = parseFloat(keyframeElement.getAttribute("data-time") || "0");
+        const keyframesElement: HTMLElement = keyframeElement.parentElement!
+            .parentElement!;
+        const time = parseFloat(
+            keyframeElement.getAttribute("data-time") || "0"
+        );
         const id = keyframesElement.getAttribute("data-id") || "";
 
         this.setTime(time);
@@ -519,8 +595,8 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
             const time = this.getTime(clientX);
             const list = this.scrollArea.keyframesArea.keyframesList;
             const index = findElementIndexByPosition(
-                list.map(keyframes => keyframes.getElement()),
-                clientY,
+                list.map((keyframes) => keyframes.getElement()),
+                clientY
             );
 
             this.setTime(time);
@@ -530,75 +606,130 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         const dblclick = (e: MouseEvent, clientX: number, clientY: number) => {
             const list = this.scrollArea.keyframesArea.keyframesList;
             const index = findElementIndexByPosition(
-                list.map(keyframes => keyframes.getElement()),
-                clientY,
+                list.map((keyframes) => keyframes.getElement()),
+                clientY
             );
 
             if (index === -1) {
                 return;
             }
+
             this.addKeyframe(index, this.getTime(clientX));
         };
-        const keytimesScrollArea = this.headerArea.keytimesArea.scrollAreaElement;
-        const keyframesScrollArea = this.scrollArea.keyframesArea.scrollAreaElement;
+        const keytimesScrollArea = this.headerArea.keytimesArea
+            .scrollAreaElement;
+        const keyframesScrollArea = this.scrollArea.keyframesArea
+            .scrollAreaElement;
         let dragItem: Scene | SceneItem | null;
         let dragDelay: number = 0;
         let dragTarget: HTMLElement | null;
-        this.draggers = [
-            keytimesScrollArea,
-            keyframesScrollArea,
-        ].map(element => {
-            return new Dragger(element, {
-                container: window,
-                dragstart: ({ clientX, inputEvent }) => {
-                    const inputTarget = inputEvent.target;
-                    const keyframeTarget = getTarget(inputTarget, el => hasClass(el, "keyframe"));
+        this.draggers = [keytimesScrollArea, keyframesScrollArea].map(
+            (element) => {
+                const baseFrameTimes: number[] = [];
 
-                    if (keyframeTarget) {
-                        this.selectByKeyframe(keyframeTarget);
-                        return false;
-                    }
-                    dragTarget = getTarget(inputTarget, el => hasClass(el, "keyframe-group"));
-                    if (dragTarget) {
-                        const properties = this.scrollArea.propertiesArea.properties;
-                        const keyframesElement = getTarget(dragTarget, el => hasClass(el, "keyframes"))!;
-                        const id = keyframesElement.getAttribute("data-id")!;
-                        const property = find(properties, p => p.props.id === id)!;
-                        const propertiesInfo = property.props.propertiesInfo;
+                return new Dragger(element, {
+                    container: window,
+                    dragstart: ({ clientX, inputEvent }) => {
+                        const inputTarget = inputEvent.target;
+                        const keyframeTarget = getTarget(inputTarget, (el) =>
+                            hasClass(el, "keyframe")
+                        );
 
-                        dragItem = propertiesInfo.item;
-                        dragDelay = dragItem.getDelay();
-                    }
-                },
-                drag: ({ distX, deltaX, deltaY, inputEvent }) => {
-                    if (dragTarget && dragItem) {
-                        const nextDelay = Math.max(dragDelay + this.getDistTime(distX), 0);
-
-                        if (dragItem.getDelay() !== nextDelay) {
-                            dragItem.setDelay(nextDelay);
-                            this.update();
+                        if (keyframeTarget) {
+                            this.selectByKeyframe(keyframeTarget);
+                            return false;
                         }
-                    } else {
-                        this.scrollArea.keyframesArea.getElement().scrollLeft -= deltaX;
-                        this.scrollArea.getElement().scrollTop -= deltaY;
-                        inputEvent.preventDefault();
-                    }
-                },
-                dragend: ({ isDrag, clientX, clientY, inputEvent }) => {
-                    dragTarget = null;
-                    dragItem = null;
-                    dragDelay = 0;
-                    !isDrag && click(inputEvent, clientX, clientY);
-                    dblCheck(isDrag, inputEvent, clientX, clientY, dblclick);
-                },
-            });
-        });
+                        dragTarget = getTarget(inputTarget, (el) =>
+                            hasClass(el, "keyframe-group")
+                        );
+                        if (dragTarget) {
+                            const properties = this.scrollArea.propertiesArea
+                                .properties;
+                            const keyframesElement = getTarget(
+                                dragTarget,
+                                (el) => hasClass(el, "keyframes")
+                            )!;
+                            const id = keyframesElement.getAttribute(
+                                "data-id"
+                            )!;
+                            const property = find(
+                                properties,
+                                (p) => p.props.id === id
+                            )!;
+                            const propertiesInfo =
+                                property.props.propertiesInfo;
+
+                            dragItem = propertiesInfo.item;
+
+                            // @ts-ignore
+                            const editorDelay = dragItem.editorDelay;
+                            dragDelay = editorDelay ? editorDelay : 0.0;
+
+                            let index = 0;
+
+                            for (const time in dragItem.items) {
+                                baseFrameTimes[index] = parseFloat(time);
+                                index++;
+                            }
+                        }
+                    },
+                    drag: ({ distX, deltaX, deltaY, inputEvent }) => {
+                        if (dragTarget && dragItem) {
+                            const nextDelay =
+                                dragDelay + this.getDistTime(distX);
+
+                            // @ts-ignore
+                            if (dragItem.editorDelay !== nextDelay) {
+                                // @ts-ignore
+                                dragItem.editorDelay = nextDelay;
+                                const items: any = dragItem.items;
+                                let index = 0;
+
+                                for (const time in items) {
+                                    const newTime =
+                                        baseFrameTimes[index] + nextDelay;
+
+                                    // @ts-ignore
+                                    dragItem.removeFrame(time);
+                                    // @ts-ignore
+                                    dragItem.newFrame(newTime);
+
+                                    index++;
+                                }
+
+                                // @ts-ignore
+                                dragItem.update();
+
+                                this.update(false, false);
+                            }
+                        } else {
+                            this.scrollArea.keyframesArea.getElement().scrollLeft -= deltaX;
+                            this.scrollArea.getElement().scrollTop -= deltaY;
+                            inputEvent.preventDefault();
+                        }
+                    },
+                    dragend: ({ isDrag, clientX, clientY, inputEvent }) => {
+                        dragTarget = null;
+                        dragItem = null;
+                        dragDelay = 0;
+                        !isDrag && click(inputEvent, clientX, clientY);
+                        dblCheck(
+                            isDrag,
+                            inputEvent,
+                            clientX,
+                            clientY,
+                            dblclick
+                        );
+                    },
+                });
+            }
+        );
     }
     private onBlur = () => {
         if (this.state.alt === true) {
             this.setState({ alt: false });
         }
-    }
+    };
     private initKeyController() {
         addEvent(window, "blur", this.onBlur);
 
@@ -607,9 +738,7 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
         const keydownMap = keyMap.keydown;
         const keyupMap = keyMap.keyup;
 
-        keycon
-            .keydown("alt", keydownMap.alt)
-            .keyup("alt", keyupMap.alt);
+        keycon.keydown("alt", keydownMap.alt).keyup("alt", keyupMap.alt);
 
         if (this.props.keyboard) {
             keycon

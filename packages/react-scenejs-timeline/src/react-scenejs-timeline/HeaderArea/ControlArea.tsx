@@ -11,10 +11,12 @@ export default class ControlArea extends ElementComponent<{
     timeline: Timeline
 }, {
     isPlay: boolean,
+    isRecord: boolean
 }> {
     public timeArea!: TimeArea;
     public state = {
         isPlay: false,
+        isRecord: false
     };
     public render() {
         const timeline = this.props.timeline;
@@ -35,7 +37,10 @@ export default class ControlArea extends ElementComponent<{
                             <div
                                 className={prefix("control " + (this.state.isPlay ? "pause" : "play"))}
                                 onClick={this.togglePlay} />
-                            <div className={prefix("control next")} onClick={this.next} />
+                            <div className={prefix("control next")} onClick={this.next} />                    
+                            <div
+                                className={prefix("control " + (this.state.isRecord ? "playRecord" : "pauseRecord"))}
+                                onClick={this.toggleRecord} />                            
                         </div>
                     </div>
                 </div>
@@ -79,6 +84,10 @@ export default class ControlArea extends ElementComponent<{
     private togglePlay = () => {
         this.props.timeline.togglePlay();
     }
+    private toggleRecord = () => {
+        this.setState({ isRecord: !this.state.isRecord });
+        this.props.timeline.toggleRecord(this.state.isRecord);
+    }    
     private prev = () => {
         this.props.timeline.prev();
     }

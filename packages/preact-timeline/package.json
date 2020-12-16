@@ -9,8 +9,8 @@
   "scripts": {
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "start": "rollup -c rollup.config.demo.js -w",
-    "build": "rollup -c && npm run declaration && print-sizes ./dist ",
-    "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json"
+    "build": "rollup -c && print-sizes ./dist ",
+    "declaration": "del -rf declaration && tsc -p tsconfig.declaration.json"
   },
   "keywords": [
     "scene",
@@ -36,10 +36,13 @@
   },
   "homepage": "https://github.com/daybrush/scenejs-timeline#readme",
   "dependencies": {
-    "@daybrush/drag": "^0.4.2",
+    "@daybrush/drag": "^0.9.1",
     "@daybrush/utils": "^0.10.0",
     "@egjs/axes": "^2.5.13",
-    "keycon": "^0.2.2",
+    "framework-utils": "^0.2.1",
+    "keycon": "^0.5.0",
+    "react-css-styler": "^0.4.0",
+    "react-pure-props": "^0.1.5",
     "scenejs": "^1.0.0"
   },
   "devDependencies": {

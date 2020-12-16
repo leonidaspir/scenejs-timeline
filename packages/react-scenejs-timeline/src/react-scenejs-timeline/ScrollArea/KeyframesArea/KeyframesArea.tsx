@@ -73,9 +73,9 @@ export default class KeyframesArea extends ElementComponent<{
         );
     }
     private onWheel = (e: any) => {
-        if (!KeyController.global.altKey) {
-            return;
-        }
+        // if (!KeyController.global.altKey) {
+        //     return;
+        // }
         e.preventDefault();
         const delta = e.deltaY;
 

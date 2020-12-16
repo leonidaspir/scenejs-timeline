@@ -33,16 +33,16 @@ export default class Value extends ElementComponent<{
         );
     }
     public renderValue() {
-        const { isParent } = this.props.propertiesInfo;
-        if (isParent) {
-            return (
-                <div className={prefix("add")} onClick={this.add}>+</div>
-            );
-        } else {
+        // const { isParent } = this.props.propertiesInfo;
+        // if (isParent) {
+        //     return (
+        //         <div className={prefix("add")} on={this.add}>+</div>
+        //     );
+        // } else {
             return (
                 <input ref={ref(this, "inputElement")}></input>
             );
-        }
+        //}
     }
     private add = () => {
         const {

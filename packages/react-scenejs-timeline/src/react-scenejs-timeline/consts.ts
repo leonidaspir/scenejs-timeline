@@ -2,12 +2,14 @@ import { prefixCSS } from "framework-utils";
 
 export const PREFIX = `scenejs-editor-`;
 
-export const CSS = prefixCSS(PREFIX, `
+export const CSS = prefixCSS(
+    PREFIX,
+    `
 {
     position: relative;
     width: 100%;
     font-size: 0;
-    background: #000;
+    background: #364346;
     display: flex;
     flex-direction: column;
 }
@@ -61,7 +63,7 @@ export const CSS = prefixCSS(PREFIX, `
 }
 .header-area .keyframe-cursor {
     position: absolute;
-    border-top: 10px solid #4af;
+    border-top: 10px solid #f60;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     width: 0;
@@ -98,6 +100,18 @@ export const CSS = prefixCSS(PREFIX, `
     border-right: 4px solid #fff;
     width: 14px;
     height: 16px;
+}
+.playRecord {
+  width: 15px;
+  height: 15px;
+  border-radius: 25px;
+  background-color: red;
+}
+.pauseRecord {
+  width: 15px;
+  height: 15px;
+  border-radius: 25px;
+  background-color: white;
 }
 .prev {
     border-right: 10px solid white;
@@ -204,7 +218,7 @@ export const CSS = prefixCSS(PREFIX, `
     width: 100%;
     height: 100%;
     background: transparent;
-    color: #4af;
+    color: #f60;
     font-weight: bold;
     background: none;
     border: 0;
@@ -238,7 +252,7 @@ export const CSS = prefixCSS(PREFIX, `
   border-bottom: 1px solid #555;
   box-sizing: border-box;
   white-space: nowrap;
-  background: rgba(90, 90, 90, 0.7);
+  background: #364346;
   z-index: 1;
 }
 
@@ -298,7 +312,7 @@ export const CSS = prefixCSS(PREFIX, `
     top: 0;
     left: 10px;
     font-size: 13px;
-    color: #4af;
+    color: #f60;
     line-height: 30px;
     font-weight: bold;
     height: 100%;
@@ -355,7 +369,7 @@ export const CSS = prefixCSS(PREFIX, `
   top: 3px;
   bottom: 3px;
   left: 0;
-  background: #4af;
+  background: #f60;
   opacity: 0.2;
   z-index: 0;
 }
@@ -364,7 +378,7 @@ export const CSS = prefixCSS(PREFIX, `
     top: 3px;
     bottom: 3px;
     left: 0;
-    background: #4af;
+    background: #f60;
     opacity: 0.6;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-left-color: rgba(255, 255, 255, 0.2);
@@ -403,7 +417,7 @@ export const CSS = prefixCSS(PREFIX, `
     border-color: #555;
 }
 .keyframe.select {
-    background: #4af;
+    background: #f60;
 }
 .keyframes-container, .line-area {
   position: relative;
@@ -420,7 +434,7 @@ export const CSS = prefixCSS(PREFIX, `
   position: absolute;
   top: 0;
   z-index: 1;
-  background: #4af;
+  background: #f60;
   width: 1px;
   height: 100%;
   left: 15px;
@@ -436,7 +450,8 @@ export const CSS = prefixCSS(PREFIX, `
   height: 100%;
   transform: translate(-50%);
 }
-`);
+`
+);
 
 export const DURATION = "duration";
 export const FILL_MODE = "fillMode";

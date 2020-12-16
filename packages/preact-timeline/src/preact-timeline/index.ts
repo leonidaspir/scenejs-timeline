@@ -1,4 +1,4 @@
-import Timeline from "./Timeline";
+import PreactTimeline from "./Timeline";
 
-export default Timeline;
+export default PreactTimeline;
 export * from "./types";

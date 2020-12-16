@@ -1,4 +1,6 @@
 import ReactTimeline from "react-scenejs-timeline";
+
+//import ReactTimeline from "../../../react-scenejs-timeline/dist/timeline.esm";
 import { h, Component } from "preact";
 import { TimelineProps } from "./types";
 

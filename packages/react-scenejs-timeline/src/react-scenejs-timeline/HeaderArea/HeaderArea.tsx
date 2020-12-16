@@ -19,11 +19,11 @@ export default class HeaderArea extends ElementComponent<{
         return (
             <div className={prefix("header-area")}>
                 <div className={prefix("properties-area")}>
-                    <div className={prefix("property")}>Name</div>
+                    <div className={prefix("property")}>Tracks</div>
                 </div>
                 <div className={prefix("values-area")}>
                     <div className={prefix("value")} >
-                        <div className={prefix("add")} onClick={this.openDialog}>+</div>
+                        <div className={prefix("add")} title="Add new track" onClick={this.openDialog}>+</div>
                     </div>
                 </div>
                 <KeytimesArea

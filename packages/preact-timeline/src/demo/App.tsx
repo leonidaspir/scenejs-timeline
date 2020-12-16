@@ -5,6 +5,7 @@ import Scene from "scenejs";
 import { zoomIn } from "@scenejs/effects";
 import { poly } from "shape-svg";
 import "./App.css";
+import { isCombinedNodeFlagSet } from "tslint";
 
 export default class App extends Component<{}> {
     private scene: Scene = new Scene();
@@ -47,6 +48,7 @@ export default class App extends Component<{}> {
             </div>);
     }
     public componentDidMount() {
+
         (window as any).app = this;
 
         document.querySelector(".play")!.appendChild(poly({

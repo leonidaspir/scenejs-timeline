@@ -1,4 +1,5 @@
-import PreactTimeline from "preact-timeline";
+//import PreactTimeline from "preact-timeline";
+import PreactTimeline from "../packages/preact-timeline/dist/timeline.esm.js";
 import EgComponent from "@egjs/component";
 import { VNode, h, render, Component } from "preact";
 import Scene, { SceneItem } from "scenejs";
