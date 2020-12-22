@@ -35,7 +35,9 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
     public static defaultProps = {
         keyboard: true,
         onSelect: () => {},
+        onUpdate: () => {},
         onTrackAdded: () => {},
+        onTrackRemoved: () => {},
         onTogglePlay: () => {},
         onToggleRecord: () => {},
         onTimeUpdated: () => {},
@@ -229,6 +231,10 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
             init: isInit,
             zoom: nextZoom,
         });
+
+        if (this.props.onUpdate) {
+            this.props.onUpdate();
+        }
     };
     public prev = () => {
         const scene = this.props.scene;
@@ -405,6 +411,11 @@ export default class Timeline extends PureProps<TimelineProps, TimelineState> {
 
         if (this.props.onTrackAdded) {
             this.props.onTrackAdded(item);
+        }
+    }
+    public onItemRemoved(item: SceneItem) {
+        if (this.props.onTrackRemoved) {
+            this.props.onTrackRemoved(item);
         }
     }
     private newProperty(item: SceneItem, properties: string[]) {

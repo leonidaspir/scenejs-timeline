@@ -7,30 +7,30 @@ import ScrollArea from "../ScrollArea";
 import { SceneItem } from "scenejs";
 
 export default class Property extends ElementComponent<{
-    id: string,
-    index: number,
-    propertiesInfo: PropertiesInfo,
-    selected: boolean,
-    folded: number,
-    timeline: Timeline,
-    scrollArea: ScrollArea,
+    id: string;
+    index: number;
+    propertiesInfo: PropertiesInfo;
+    selected: boolean;
+    folded: number;
+    timeline: Timeline;
+    scrollArea: ScrollArea;
 }> {
     public render() {
         const {
             id,
             selected,
             folded,
-            propertiesInfo: {
-                keys: propertyNames,
-                isItem,
-                isParent,
-            },
+            propertiesInfo: { keys: propertyNames, isItem, isParent },
         } = this.props;
         const length = propertyNames.length;
         const name = propertyNames[length - 1] as string;
 
         return (
-            <div className={prefix("property" /*+ (folded === 1 ? " fold" : "")*/ + (selected ? " select" : ""))}
+            <div
+                className={prefix(
+                    "property" /*+ (folded === 1 ? " fold" : "")*/ +
+                        (selected ? " select" : "")
+                )}
                 onClick={this.onClick}
                 data-id={id}
                 data-name={name}
@@ -39,10 +39,14 @@ export default class Property extends ElementComponent<{
                 data-fold={folded === 2 ? 1 : 0}
                 style={{
                     paddingLeft: `${10 + (length - 1) * 20}px`,
-                }}>
+                }}
+            >
                 {/* <div className={prefix("arrow")}></div> */}
                 <span>{name}</span>
-                <div className={prefix("remove")} title="Remove selected track"></div>
+                <div
+                    className={prefix("remove")}
+                    title="Remove selected track"
+                ></div>
             </div>
         );
     }
@@ -58,16 +62,21 @@ export default class Property extends ElementComponent<{
 
             timeline.select(id);
         }
-    }
+    };
     private onClickArrow = () => {
         const { id, timeline, scrollArea, index } = this.props;
 
         timeline.select(id);
         scrollArea.fold(index);
-    }
+    };
     private onClickRemove = () => {
         const { propertiesInfo, timeline } = this.props;
-        const { isItem, parentItem, item: targetItem, properties } = propertiesInfo;
+        const {
+            isItem,
+            parentItem,
+            item: targetItem,
+            properties,
+        } = propertiesInfo;
         if (isItem) {
             let targetName: string | number | null = null;
             parentItem.forEach((item, name) => {
@@ -77,17 +86,18 @@ export default class Property extends ElementComponent<{
                 }
             });
             if (targetName != null) {
+                timeline.onItemRemoved(targetItem as SceneItem);
                 parentItem.removeItem(targetName);
             }
         } else {
             const times = (targetItem as SceneItem).times;
 
-            times.forEach(time => {
+            times.forEach((time) => {
                 (targetItem as SceneItem).remove(time, ...properties);
             });
         }
 
         timeline.select("", -1, true);
         timeline.update();
-    }
+    };
 }

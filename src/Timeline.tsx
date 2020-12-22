@@ -17,6 +17,12 @@ export default class Timeline extends EgComponent {
                 {...options}
                 scene={scene}
                 onSelect={this.onSelect}
+                onUpdate={this.onUpdate}
+                onTrackAdded={this.onTrackAdded}
+                onTrackRemoved={this.onTrackRemoved}
+                onTogglePlay={this.onTogglePlay}
+                onToggleRecord={this.onToggleRecord}
+                onTimeUpdated={this.onTimeUpdated}
             />,
             element,
         );
@@ -29,4 +35,22 @@ export default class Timeline extends EgComponent {
     private onSelect = (e: SelectEvent) => {
         this.trigger("select", e);
     }
+    private onUpdate = () => {
+        this.trigger("update");
+    }    
+    private onTrackAdded = (e: SelectEvent) => {
+        this.trigger("onTrackAdded", e);
+    }
+    private onTrackRemoved = (e: SelectEvent) => {
+        this.trigger("onTrackRemoved", e);
+    }    
+    private onTogglePlay = (e: SelectEvent) => {
+        this.trigger("onTogglePlay", e);
+    }
+    private onToggleRecord = (e: SelectEvent) => {
+        this.trigger("onToggleRecord", e);
+    }
+    private onTimeUpdated = (e: SelectEvent) => {
+        this.trigger("onTimeUpdated", e);
+    }                              
 }

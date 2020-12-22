@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "start": "rollup -c -w",
-    "build": "rollup -c && npm run declaration && print-sizes ./dist ",
+    "build": "rollup -c && print-sizes ./dist ",
     "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json",
     "release": "npm run build && release",
     "release:init": "npm run build && release -i"

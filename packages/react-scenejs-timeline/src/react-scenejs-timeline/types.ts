@@ -11,13 +11,20 @@ export interface SelectEvent {
     prevSelectedProperty: string;
     prevSelectedTime: number;
 }
-export type AttributeKeys = Exclude<keyof HTMLAttributes<HTMLDivElement>, "onSelect">;
-export type TimelineAttributes = {[key in AttributeKeys]?: HTMLAttributes<HTMLDivElement>[key]};
+export type AttributeKeys = Exclude<
+    keyof HTMLAttributes<HTMLDivElement>,
+    "onSelect"
+>;
+export type TimelineAttributes = {
+    [key in AttributeKeys]?: HTMLAttributes<HTMLDivElement>[key];
+};
 export interface TimelineProps extends TimelineAttributes {
     scene?: Scene | SceneItem;
     keyboard?: boolean;
     onSelect?: (e: SelectEvent) => any;
+    onUpdate?: () => any;
     onTrackAdded?: (item: SceneItem) => any;
+    onTrackRemoved?: (item: SceneItem) => any;
     onTogglePlay?: (playState: boolean) => any;
     onToggleRecord?: (playState: boolean) => any;
     onTimeUpdated?: (time: number) => any;
